@@ -651,17 +651,19 @@ struct ThreadData {
 };
 
 int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha, auto beta, auto hardTimeLimit) {
-    if (depth == 0) {
-        return board.evaluate();
-    }
 
-    if (chrono::high_resolution_clock::now() >= hardTimeLimit) {
+    // qsearch
+    if (depth < 1) {
+        int32_t staticEval = board.evaluate();
+        if (staticEval >= beta) return staticEval;
+        alpha = std::max(alpha, staticEval);
+    } else if (chrono::high_resolution_clock::now() >= hardTimeLimit) {
         threadData.searchComplete = false;
         return 0;
     }
 
     uint16_t moves[256] = {0};
-    board.generateMoves(moves, false);
+    board.generateMoves(moves, depth < 1);
 
     int32_t bestScore = -32000;
     auto movesMade = 0;
@@ -693,7 +695,7 @@ int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha,
         }
     }
 
-    if (!movesMade)
+    if (depth > 0 && !movesMade)
         return board.state.flags[1] ? -32000 + ply : 0;
 
     return bestScore;
