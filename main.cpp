@@ -652,15 +652,17 @@ struct ThreadData {
 
 int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha, auto beta, auto hardTimeLimit) {
 
-    if (chrono::high_resolution_clock::now() >= hardTimeLimit) {
-        threadData.searchComplete = false;
-        return 0;
-    }
-
     int32_t staticEval;
+
+    if (!threadData.searchComplete) return 0;
 
     // qsearch
     if (depth < 1) {
+        if (chrono::high_resolution_clock::now() >= hardTimeLimit) {
+            threadData.searchComplete = false;
+            return 0;
+        }
+
         staticEval = board.evaluate();
         if (staticEval >= beta) return staticEval;
         alpha = std::max(alpha, staticEval);
