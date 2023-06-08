@@ -650,15 +650,60 @@ struct ThreadData {
     bool searchComplete = true;
 };
 
-int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha, auto beta, auto hardTimeLimit) {
-    if (depth == 0) {
-        return board.evaluate();
-    }
+
+int32_t qsearch(auto &board, auto &threadData, auto alpha, auto beta, auto hardTimeLimit) {
 
     if (chrono::high_resolution_clock::now() >= hardTimeLimit) {
         threadData.searchComplete = false;
         return 0;
     }
+
+    int32_t staticEval = board.evaluate();
+    if (staticEval >= beta) return staticEval;
+    alpha = std::max(alpha, staticEval);
+
+    uint16_t moves[256] = {0};
+    board.generateMoves(moves, true);
+
+    int32_t bestScore = staticEval;
+    auto movesMade = 0;
+
+    uint64_t i = 0;
+    while (const auto move = moves[i++]) {
+        if (board.makeMove(move)) {
+            board.unmakeMove();
+            continue;
+        }
+
+        movesMade++;
+        // minify enable filter delete
+        threadData.nodes++;
+        // minify disable filter delete
+
+        const int32_t value = -qsearch(board, threadData, -beta, -alpha, hardTimeLimit);
+
+        board.unmakeMove();
+
+        if (value > bestScore) {
+            bestScore = value;
+            if (value > alpha) {
+                alpha = value;
+                if (alpha >= beta)
+                    break;
+            }
+        }
+    }
+
+    return bestScore;
+}
+
+
+int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha, auto beta, auto hardTimeLimit) {
+    if (depth == 0) {
+        return qsearch(board, threadData, alpha, beta, hardTimeLimit);
+    }
+
+    if (!threadData.searchComplete) return 0;
 
     uint16_t moves[256] = {0};
     board.generateMoves(moves, false);
