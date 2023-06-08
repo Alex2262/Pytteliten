@@ -654,7 +654,7 @@ int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha,
 
     int32_t staticEval;
 
-    if (!threadData.searchComplete) return 0;
+    if (ply && !threadData.searchComplete) return 0;
 
     // qsearch
     if (depth < 1) {
