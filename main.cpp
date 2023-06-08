@@ -642,11 +642,7 @@ void perft(auto &board, auto depth) {
 
 struct ThreadData {
     uint16_t bestMove = 0;
-
-    // minify enable filter delete
     uint64_t nodes = 0;
-    // minify disable filter delete
-
     bool searchComplete = true;
 };
 
@@ -658,7 +654,7 @@ int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha,
 
     // qsearch
     if (depth < 1) {
-        if (chrono::high_resolution_clock::now() >= hardTimeLimit) {
+        if (threadData.nodes % 1024 && chrono::high_resolution_clock::now() >= hardTimeLimit) {
             threadData.searchComplete = false;
             return 0;
         }
@@ -685,9 +681,9 @@ int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha,
         }
 
         movesMade++;
-        // minify enable filter delete
+
         threadData.nodes++;
-        // minify disable filter delete
+
 
         const int32_t value = -negamax(board, threadData, ply + 1, depth - 1, -beta, -alpha, hardTimeLimit);
 
