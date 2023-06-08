@@ -653,8 +653,9 @@ struct ThreadData {
 int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha, auto beta, auto hardTimeLimit) {
 
     // qsearch
+    int32_t staticEval;
     if (depth < 1) {
-        int32_t staticEval = board.evaluate();
+        staticEval = board.evaluate();
         if (staticEval >= beta) return staticEval;
         alpha = std::max(alpha, staticEval);
     } else if (chrono::high_resolution_clock::now() >= hardTimeLimit) {
@@ -665,7 +666,7 @@ int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha,
     uint16_t moves[256] = {0};
     board.generateMoves(moves, depth < 1);
 
-    int32_t bestScore = -32000;
+    int32_t bestScore = depth < 1 ? staticEval : -32000;
     auto movesMade = 0;
 
     uint64_t i = 0;
