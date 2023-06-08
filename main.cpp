@@ -652,16 +652,22 @@ struct ThreadData {
 
 int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha, auto beta, auto hardTimeLimit) {
 
-    // qsearch
+    if (chrono::high_resolution_clock::now() >= hardTimeLimit) {
+        threadData.searchComplete = false;
+        return 0;
+    }
+
     int32_t staticEval;
+
+    // qsearch
     if (depth < 1) {
         staticEval = board.evaluate();
         if (staticEval >= beta) return staticEval;
         alpha = std::max(alpha, staticEval);
-    } else if (chrono::high_resolution_clock::now() >= hardTimeLimit) {
-        threadData.searchComplete = false;
-        return 0;
     }
+
+    // position fen r1b1k2r/5pb1/ppnp1np1/4p2p/P1P1P1P1/BPq2N1P/3NBP2/R2Q1RK1 w kq - 0 1
+    // go wtime 10000 winc 1 btime 10000 binc 1
 
     uint16_t moves[256] = {0};
     board.generateMoves(moves, depth < 1);
