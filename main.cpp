@@ -682,6 +682,8 @@ int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha,
 
         board.unmakeMove();
 
+        if (!threadData.searchComplete) return 0;
+
         if (value > bestScore) {
             bestScore = value;
             if (!ply) threadData.bestMove = move;
