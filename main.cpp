@@ -646,6 +646,8 @@ struct ThreadData {
     bool searchComplete = true;
 };
 
+constexpr int32_t PieceValues[] = {1, 3, 3, 5, 9, 0};
+
 int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha, auto beta, auto hardTimeLimit) {
 
     int32_t staticEval;
@@ -673,7 +675,7 @@ int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha,
 
     pair<int32_t, uint16_t> scoredMoves[256];
     while (auto move = moves[i++]) {
-        scoredMoves[i] = {board.state.pieceOn(move >> 4 & 63) > 5 ? 1 : 6 + (int)board.state.pieceOn(move >> 4 & 63) - (int)board.state.pieceOn(move >> 10),
+        scoredMoves[i] = {board.state.pieceOn(move >> 4 & 63) > 5 ? 1 : 10 + PieceValues[board.state.pieceOn(move >> 4 & 63)] - PieceValues[board.state.pieceOn(move >> 10)],
                           move};
     }
 
