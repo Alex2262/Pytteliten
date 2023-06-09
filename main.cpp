@@ -667,14 +667,23 @@ int32_t negamax(auto &board, auto &threadData, auto ply, auto depth, auto alpha,
     // position fen r1b1k2r/5pb1/ppnp1np1/4p2p/P1P1P1P1/BPq2N1P/3NBP2/R2Q1RK1 w kq - 0 1
     // go wtime 10000 winc 1 btime 10000 binc 1
 
+    uint64_t i = 0;
     uint16_t moves[256] = {0};
     board.generateMoves(moves, depth < 1);
+
+    pair<int32_t, uint16_t> scoredMoves[256];
+    while (auto move = moves[i++]) {
+        scoredMoves[i] = {board.state.pieceOn(move >> 4 & 63) > 5 ? 1 : 6 + (int)board.state.pieceOn(move >> 4 & 63) - (int)board.state.pieceOn(move >> 10),
+                          move};
+    }
+
+    std::stable_sort(begin(scoredMoves), end(scoredMoves), greater());
 
     int32_t bestScore = depth < 1 ? staticEval : -32000;
     auto movesMade = 0;
 
-    uint64_t i = 0;
-    while (const auto move = moves[i++]) {
+    i = 0;
+    while (const auto move = scoredMoves[i++].second) {
         if (board.makeMove(move)) {
             board.unmakeMove();
             continue;
